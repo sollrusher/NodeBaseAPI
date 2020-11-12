@@ -54,11 +54,7 @@ app.get("/allusers",verifyToken , function (req, res) {
 
 })
 
-app.get("/register", function(req, res){
-  res.render("register.hbs");
-});
-
-app.post("/register", function (req, res) {
+app.post("/register", urlencodedParser,  function (req, res) {
          
   if(!req.body.fullname || !req.body.email || !req.body.password || !req.body.age) return res.sendStatus(400);
 
@@ -90,20 +86,6 @@ function verifyToken (req, res, next) {
     res.sendStatus(403)
   }
 }
-
-// получаем объект по id для редактирования
-app.get("/edit/:id", function(req, res){
-  const userid = req.params.id;
-  User.findAll({where:{id: userid}, raw: true })
-  .then(data=>{
-    res.render("edit.hbs", {
-      user: data[0]
-    });
-  })
-  .catch(err=>console.log(err));
-});
- 
-// обновление данных в БД
 app.post("/edit", verifyToken , urlencodedParser, function (req, res) {
   jwt.verify(req.token, "secretjwt", (err, authData) => {
     if(err){
@@ -116,6 +98,13 @@ app.post("/edit", verifyToken , urlencodedParser, function (req, res) {
   const email = req.body.email;
   const id = req.body.id;
 
+  if (!fullname ||
+    !age ||
+    !email ||
+    !id) res.send('invalid data')
+
+    
+
   User.update({fullname: fullname, age: age, email:email}, {where: {id: id} }).then(() => {
 
     res.send(`New name is - ${fullname} `);
@@ -125,7 +114,6 @@ app.post("/edit", verifyToken , urlencodedParser, function (req, res) {
 });
 });
  
-// удаление данных
 app.post("/delete", verifyToken , urlencodedParser, function(req, res){
   jwt.verify(req.token, "secretjwt", (err, authData) => {
     if(err){
@@ -133,6 +121,9 @@ app.post("/delete", verifyToken , urlencodedParser, function(req, res){
     } else {  
       console.log('req.body.id - ', req.body.id)
   const id = req.body.id;
+
+      if(!User.findAll({where: {id: id}})) res.send('Wrong id')
+
   User.destroy({where: {id: id} }).then(() => {
     res.send(`User with id ${id} was deleted`)
   }).catch(err=>console.log(err));
