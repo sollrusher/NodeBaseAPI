@@ -34,48 +34,19 @@ const User = sequelize.define("user", {
   }
 });
 
-app.set("view engine", "hbs");
-
 sequelize.sync().then(()=>{
   app.listen(3000, function(){
     console.log("Сервер ожидает подключения...");
   });
 }).catch(err=>console.log(err));
 
-app.get('/', function(req, res){
-  res.render("index.hbs")
-});
-
-app.post('/allusers', urlencodedParser, function (req, res) {
-  if(!req.body) return res.sendStatus(400);
-
-  const userEmail = req.body.email;
-  const userPassword = req.body.password;
-
-  User.findAll({where:{email: userEmail} ,raw: true }).then(data=>{
-    if(!data) {res.send('none'); return res.sendStatus(400);}
-    const bytes  = CryptoJS.AES.decrypt(data[0].password, 'secret');
-    const cryptoPassword = bytes.toString(CryptoJS.enc.Utf8);
-
-    // if(cryptoPassword == userPassword)
-    // res.redirect("/allusers");
-    // else
-    // res.send('none')
-    
-  }).catch(err=>console.log(err));
-  
-})
-
-app.get("/allusers",verifyToken ,urlencodedParser, function (req, res) {
+app.get("/allusers",verifyToken , function (req, res) {
   jwt.verify(req.token, "secretjwt", (err, authData) => {
     if(err){
       res.sendStatus(403);
     } else {
       User.findAll({raw: true }).then(data=>{
-        res.render("allusers.hbs", {
-          users: data
-          
-        });
+        res.send(data);
       }).catch(err=>console.log(err));
 
     }
@@ -87,7 +58,7 @@ app.get("/register", function(req, res){
   res.render("register.hbs");
 });
 
-app.post("/register", urlencodedParser, function (req, res) {
+app.post("/register", function (req, res) {
          
   if(!req.body.fullname || !req.body.email || !req.body.password || !req.body.age) return res.sendStatus(400);
 
@@ -133,23 +104,38 @@ app.get("/edit/:id", function(req, res){
 });
  
 // обновление данных в БД
-app.post("/edit", urlencodedParser, function (req, res) {
-         
+app.post("/edit", verifyToken , urlencodedParser, function (req, res) {
+  jwt.verify(req.token, "secretjwt", (err, authData) => {
+    if(err){
+      res.sendStatus(403);
+    } else {
   if(!req.body) return res.sendStatus(400);
  
-  const username = req.body.name;
-  const userage = req.body.age;
-  const userid = req.body.id;
-  User.update({name:username, age: userage}, {where: {id: userid} }).then(() => {
-    res.redirect("/allusers");
+  const fullname = req.body.fullname;
+  const age = req.body.age;
+  const email = req.body.email;
+  const id = req.body.id;
+
+  User.update({fullname: fullname, age: age, email:email}, {where: {id: id} }).then(() => {
+
+    res.send(`New name is - ${fullname} `);
   })
   .catch(err=>console.log(err));
+}
+});
 });
  
 // удаление данных
-app.post("/delete/:id", function(req, res){  
-  const userid = req.params.id;
-  User.destroy({where: {id: userid} }).then(() => {
-    res.redirect("/allusers");
+app.post("/delete", verifyToken , urlencodedParser, function(req, res){
+  jwt.verify(req.token, "secretjwt", (err, authData) => {
+    if(err){
+      res.sendStatus(403);
+    } else {  
+      console.log('req.body.id - ', req.body.id)
+  const id = req.body.id;
+  User.destroy({where: {id: id} }).then(() => {
+    res.send(`User with id ${id} was deleted`)
   }).catch(err=>console.log(err));
+}
+  });
 });
