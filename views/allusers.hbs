@@ -12,6 +12,21 @@
   </style>
 </head>
 <body>
-  <h1>HELLLLLOOOOOOOOOOOOOOOOOOO</h1>
+      <table style="display: block;">
+        <tr><th>Email</th><th>Name</th><th>Age</th><th></th></tr>
+        {{#each users}}
+            <tr>
+                <td>{{this.email}}</td>
+                <td>{{this.fullname}}</td>
+                <td>{{this.age}}</td>
+                <td>
+                    <a href="/edit/{{this.id}}">Edit</a>|
+                    <form action="delete/{{this.id}}" method="POST" style="display:inline;">
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
+            </tr>
+        {{/each}}
+    </table>
 </body>
 </html>
