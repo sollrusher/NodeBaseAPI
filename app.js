@@ -64,16 +64,44 @@ app.post("/register", urlencodedParser,  function (req, res) {
   const age = req.body.age;
 
   const cryptoPassword = CryptoJS.AES.encrypt(password, 'secret').toString();
+  
+  User.create({ fullname: fullname, email: email, password: cryptoPassword,  age: age }).then(()=>{
+    jwt.sign({ email: email}, 'secretjwt', (err, token) => {
+      res.json({
+        token,
+      });
+    });
+  }).catch(err=>console.log(err));
+});
 
+app.post("/auth" , urlencodedParser, function (req, res) {
+  if(!req.body) return res.sendStatus(404);
+
+  const email = req.body.email;
+  const password = req.body.password;
+
+  User.findAll({where:{email: email} ,raw: true }).then(data=>{
+    if(!data) {res.send('none'); return res.sendStatus(404);}
+
+    const bytes  = CryptoJS.AES.decrypt(data[0].password, 'secret');
+    const cryptoPassword = bytes.toString(CryptoJS.enc.Utf8);
+
+    if(cryptoPassword == password)
+{    
   jwt.sign({ email: email}, 'secretjwt', (err, token) => {
     res.json({
       token,
     });
   });
-  
-  User.create({ fullname: fullname, email: email, password: cryptoPassword,  age: age }).then(()=>{
-    
+}
+    else
+    res.sendStatus(404)
+
   }).catch(err=>console.log(err));
+
+
+
+  
 });
 
 function verifyToken (req, res, next) {
@@ -101,7 +129,7 @@ app.post("/edit", verifyToken , urlencodedParser, function (req, res) {
   if (!fullname ||
     !age ||
     !email ||
-    !id) res.send('invalid data')
+    !id) return res.sendStatus(400)
 
     
 
@@ -119,14 +147,18 @@ app.post("/delete", verifyToken , urlencodedParser, function(req, res){
     if(err){
       res.sendStatus(403);
     } else {  
-      console.log('req.body.id - ', req.body.id)
   const id = req.body.id;
 
-      if(!User.findAll({where: {id: id}})) res.send('Wrong id')
+    User.findAll({where: {id: id}}).then((data) => {
+      if(data.length == 0){return res.sendStatus(404)}
+      else {
+        User.destroy({where: {id: id} }).then(() => {
+          res.send(`User with id ${id} was deleted`)
+        }).catch(err=>console.log(err));
+      }
+    })
 
-  User.destroy({where: {id: id} }).then(() => {
-    res.send(`User with id ${id} was deleted`)
-  }).catch(err=>console.log(err));
+  
 }
   });
 });
