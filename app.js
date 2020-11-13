@@ -75,6 +75,7 @@ app.post("/register", urlencodedParser,  function (req, res) {
 });
 
 app.post("/auth" , urlencodedParser, function (req, res) {
+  
   if(!req.body) return res.sendStatus(404);
 
   const email = req.body.email;
