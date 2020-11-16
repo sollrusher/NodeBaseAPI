@@ -15,6 +15,7 @@ const sequelize = new Sequelize("fusionuser", "danila", "qwerty", {
   }
 });
 
+
 const User = sequelize.define("user", {
   fullname: {
     type: Sequelize.STRING,
@@ -40,6 +41,21 @@ sequelize.sync().then(()=>{
   });
 }).catch(err=>console.log(err));
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Headers", "*")
+  next();
+});
+
+app.get('/', function(req, res) {
+  res.send('gagabuga')
+});
+
+app.post('/', function(req, res) {
+ res.send('rapapipi')
+});
+
 app.get("/allusers",verifyToken , function (req, res) {
   jwt.verify(req.token, "secretjwt", (err, authData) => {
     if(err){
@@ -48,7 +64,6 @@ app.get("/allusers",verifyToken , function (req, res) {
       User.findAll({raw: true }).then(data=>{
         res.send(data);
       }).catch(err=>console.log(err));
-
     }
   })
 
@@ -75,7 +90,7 @@ app.post("/register", urlencodedParser,  function (req, res) {
 });
 
 app.post("/auth" , urlencodedParser, function (req, res) {
-  
+  res.setHeader('Access-Control-Allow-Origin', '*');
   if(!req.body) return res.sendStatus(404);
 
   const email = req.body.email;
@@ -99,10 +114,6 @@ app.post("/auth" , urlencodedParser, function (req, res) {
     res.sendStatus(404)
 
   }).catch(err=>console.log(err));
-
-
-
-  
 });
 
 function verifyToken (req, res, next) {
