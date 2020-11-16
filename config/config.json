@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "danila",
+    "password": "qwerty",
+    "database": "fusionuser",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "danila",
+    "password": "qwerty",
+    "database": "fusionuser",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "danila",
+    "password": "qwerty",
+    "database": "fusionuser",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}
