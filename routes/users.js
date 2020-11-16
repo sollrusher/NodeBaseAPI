@@ -6,20 +6,19 @@ const verifyToken = require("../middlewares/jwtVerify");
 
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-router.use(verifyToken)
+router.use(verifyToken);
 
 router.get("/", async function (req, res) {
-
   await models.User.findAll({ raw: true })
     .then((data) => {
       res.send({
         error: false,
         payload: {
-          users: data || []
-        }
+          users: data || [],
+        },
       });
     })
-    .catch((err) => res.status(418).send("Something went wrong"));
+    .catch(() => res.status(418).send("Something went wrong"));
 });
 
 router.post("/edit", urlencodedParser, async function (req, res) {
@@ -34,14 +33,12 @@ router.post("/edit", urlencodedParser, async function (req, res) {
 
   await models.User.findAll({ where: { id: id } }).then((data) => {
     if (data.length == 0) {
-      return res.status(404).send(
-        {
-          error: false,
-          payload: {
-            users: data || []
-          },
-        }
-      );
+      return res.status(404).send({
+        error: false,
+        payload: {
+          users: data || [],
+        },
+      });
     } else {
       models.User.update(
         { fullname: fullname, age: age, email: email },
@@ -51,11 +48,11 @@ router.post("/edit", urlencodedParser, async function (req, res) {
           res.send({
             error: false,
             payload: {
-              user: data || []
-            }
+              user: data || [],
+            },
           });
         })
-        .catch((err) => res.status(418).send("Something went wrong"));
+        .catch(() => res.status(418).send("Something went wrong"));
     }
   });
 });
@@ -65,27 +62,25 @@ router.post("/delete", urlencodedParser, async function (req, res) {
 
   await models.User.findAll({ where: { id: id } }).then((data) => {
     if (data.length == 0) {
-      return res.status(404).send(
-        {
-          error: false,
-          payload: {
-            users: data || []
-          },
-          success: false
-        }
-      );
+      return res.status(404).send({
+        error: false,
+        payload: {
+          users: data || [],
+        },
+        success: false,
+      });
     } else {
       models.User.destroy({ where: { id: id } })
         .then(() => {
           res.send({
             error: false,
             payload: {
-              users: data || []
+              users: data || [],
             },
-            success: true
+            success: true,
           });
         })
-        .catch((err) => res.status(418).send("Something went wrong"));
+        .catch(() => res.status(418).send("Something went wrong"));
     }
   });
 });

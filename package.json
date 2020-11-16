@@ -11,7 +11,10 @@
     "pg": "^8.5.0",
     "sequelize": "^6.3.5"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^7.13.0",
+    "eslint-plugin-node": "^11.1.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

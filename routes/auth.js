@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const bodyParser = require("body-parser");
-const CryptoJS = require("crypto-js");
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 const jwtsign = require("../utils/jwtsign");
 
 const models = require("../models");
@@ -22,11 +21,11 @@ router.post("/", urlencodedParser, async function (req, res) {
         return;
       }
 
-      if (bcrypt.compareSync(password, data[0].password)) { 
+      if (bcrypt.compareSync(password, data[0].password)) {
         jwtsign(res, email);
       } else res.status(404).send("Wrong password");
     })
-    .catch((err) => res.status(418).send("Something went wrong"));
+    .catch(() => res.status(418).send("Something went wrong"));
 });
 
 module.exports = router;

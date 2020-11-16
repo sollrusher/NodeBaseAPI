@@ -1,3 +1,3 @@
-const secretjwt = 'secretjwt';
+const secretjwt = "secretjwt";
 
 module.exports = secretjwt;
