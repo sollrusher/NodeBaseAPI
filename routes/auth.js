@@ -1,31 +1,41 @@
-const express = require("express");
+const express = require('express');
+
 const router = express.Router();
-const bodyParser = require("body-parser");
-const bcrypt = require("bcryptjs");
-const jwtsign = require("../utils/jwtsign");
+const decrypt = require('../utils/decryptPass');
+const signJwt = require('../utils/jwtsign');
 
-const models = require("../models");
+const models = require('../models');
 
-const urlencodedParser = bodyParser.urlencoded({ extended: false });
+router.post('/', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      throw new Error('Empty fields');
+    }
 
-router.post("/", urlencodedParser, async function (req, res) {
-  if (!req.body) return res.sendStatus(404);
+    const user = await models.User.findOne({ where: { email } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (!decrypt(password, user.password)) {
+      throw new Error('Password wrong');
+    }
 
-  const email = req.body.email;
-  const password = req.body.password;
-
-  await models.User.findAll({ where: { email: email }, raw: true })
-    .then((data) => {
-      if (data.length == 0) {
-        res.status(404).send("Email not found");
-        return;
-      }
-
-      if (bcrypt.compareSync(password, data[0].password)) {
-        jwtsign(res, email);
-      } else res.status(404).send("Wrong password");
-    })
-    .catch(() => res.status(418).send("Something went wrong"));
+    const token = await signJwt(user.id);
+    const { id, fullname, age } = user;
+    return res.json({
+      error: false,
+      payload: {
+        user: { id, fullname, age },
+        token,
+      },
+    });
+  } catch (err) {
+    return res.json({
+      error: true,
+      message: err.message,
+    });
+  }
 });
 
 module.exports = router;

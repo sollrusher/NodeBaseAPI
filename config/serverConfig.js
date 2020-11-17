@@ -1,3 +1,8 @@
-const secretjwt = "secretjwt";
+const config = {
+  secretJwt: 'secretjwt',
+  database: {
 
-module.exports = secretjwt;
+  },
+};
+
+module.exports = config;

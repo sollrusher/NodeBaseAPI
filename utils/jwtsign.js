@@ -1,12 +1,13 @@
-const jwt = require("jsonwebtoken");
-const secretjwt = require("../config/serverConfig");
+const jwt = require('jsonwebtoken');
+const config = require('../config/serverConfig');
 
-function jwtsign(res, email) {
-  jwt.sign({ email: email }, secretjwt, (err, token) => {
-    res.json({
-      token,
+function signJwt(userId) {
+  return new Promise((res, rej) => {
+    jwt.sign({ userId }, config.secretJwt, (error, token) => {
+      res(token);
+      rej(error);
     });
   });
 }
 
-module.exports = jwtsign;
+module.exports = signJwt;

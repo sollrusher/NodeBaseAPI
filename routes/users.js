@@ -1,15 +1,18 @@
-const express = require("express");
-const router = express.Router();
-const bodyParser = require("body-parser");
-const models = require("../models");
-const verifyToken = require("../middlewares/jwtVerify");
+const express = require('express');
 
-const urlencodedParser = bodyParser.urlencoded({ extended: false });
+const router = express.Router();
+const models = require('../models');
+const verifyToken = require('../middlewares/jwtVerify');
 
 router.use(verifyToken);
 
-router.get("/", async function (req, res) {
-  await models.User.findAll({ raw: true })
+router.get('/', async (req, res) => {
+  await models.User.findAll(
+    {
+      attributes: ['fullname', 'email', 'age'],
+    },
+    { raw: true },
+  )
     .then((data) => {
       res.send({
         error: false,
@@ -18,31 +21,48 @@ router.get("/", async function (req, res) {
         },
       });
     })
-    .catch(() => res.status(418).send("Something went wrong"));
+    .catch((err) => res.json({
+      error: true,
+      message: err.message,
+    }));
 });
 
-router.post("/edit", urlencodedParser, async function (req, res) {
-  if (!req.body) return res.sendStatus(400);
-
-  const fullname = req.body.fullname;
-  const age = req.body.age;
-  const email = req.body.email;
-  const id = req.body.id;
-
-  if (!fullname || !age || !email || !id) return res.sendStatus(400);
-
-  await models.User.findAll({ where: { id: id } }).then((data) => {
-    if (data.length == 0) {
-      return res.status(404).send({
+router.get('/:id', async (req, res) => {
+  await models.User.findOne({ where: { id: req.params.id } }, { raw: true })
+    .then((data) => {
+      res.send({
         error: false,
         payload: {
           users: data || [],
         },
       });
-    } else {
+    })
+    .catch((err) => res.json({
+      error: true,
+      message: err.message,
+    }));
+});
+
+router.put('/:id', async (req, res) => {
+  if (!req.body) {
+    return res.sendStatus(400);
+  }
+
+  const { fullname, age, email } = req.body;
+  const { id } = req.params;
+
+  if (!fullname || !age || !email || !id) {
+    return res.sendStatus(400);
+  }
+
+  await models.User.findOne({ where: { id } })
+    .then((data) => {
+      if (!data) {
+        throw new Error('User not found');
+      }
       models.User.update(
-        { fullname: fullname, age: age, email: email },
-        { where: { id: id } }
+        { fullname, age, email },
+        { where: { id } },
       )
         .then(() => {
           res.send({
@@ -52,25 +72,27 @@ router.post("/edit", urlencodedParser, async function (req, res) {
             },
           });
         })
-        .catch(() => res.status(418).send("Something went wrong"));
-    }
-  });
+        .catch((err) => res.json({
+          error: true,
+          message: err.message,
+        }));
+    })
+    .catch((err) => res.json({
+      error: true,
+      message: err.message,
+    }));
+  return res.send('ok');
 });
 
-router.post("/delete", urlencodedParser, async function (req, res) {
-  const id = req.body.id;
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  await models.User.findOne({ where: { id } })
+    .then((data) => {
+      if (!data) {
+        throw new Error('User not found');
+      }
 
-  await models.User.findAll({ where: { id: id } }).then((data) => {
-    if (data.length == 0) {
-      return res.status(404).send({
-        error: false,
-        payload: {
-          users: data || [],
-        },
-        success: false,
-      });
-    } else {
-      models.User.destroy({ where: { id: id } })
+      models.User.destroy({ where: { id } })
         .then(() => {
           res.send({
             error: false,
@@ -80,9 +102,15 @@ router.post("/delete", urlencodedParser, async function (req, res) {
             success: true,
           });
         })
-        .catch(() => res.status(418).send("Something went wrong"));
-    }
-  });
+        .catch((err) => res.json({
+          error: true,
+          message: err.message,
+        }));
+    })
+    .catch((err) => res.json({
+      error: true,
+      message: err.message,
+    }));
 });
 
 module.exports = router;

@@ -14,9 +14,9 @@ module.exports = (sequelize, DataTypes) => {
   User.init(
     {
       fullname: DataTypes.STRING,
-      email: DataTypes.STRING,
+      email: DataTypes.STRING,  // TODO: make unique, also in migrations!
       password: DataTypes.STRING,
-      age: DataTypes.STRING,
+      age: DataTypes.STRING,   // TODO: not string, but number
     },
     {
       sequelize,
