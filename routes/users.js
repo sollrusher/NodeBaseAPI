@@ -30,10 +30,15 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   await models.User.findOne({ where: { id: req.params.id } }, { raw: true })
     .then((data) => {
+      const {
+        id, fullname, age, email, password,
+      } = data;
       res.send({
         error: false,
         payload: {
-          users: data || [],
+          users: {
+            id, fullname, age, email, password,
+          } || [],
         },
       });
     })
@@ -44,73 +49,65 @@ router.get('/:id', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
-  if (!req.body) {
-    return res.sendStatus(400);
-  }
+  try {
+    const { fullname, age, email } = req.body;
+    const { id } = req.params;
 
-  const { fullname, age, email } = req.body;
-  const { id } = req.params;
+    if (!fullname || !age || !email || !id) {
+      throw new Error('Empty field');
+    }
 
-  if (!fullname || !age || !email || !id) {
-    return res.sendStatus(400);
-  }
+    const user = await models.User.findOne({ where: { id } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    models.User.update(
+      { fullname, age, email },
+      { where: { id } },
+    );
 
-  await models.User.findOne({ where: { id } })
-    .then((data) => {
-      if (!data) {
-        throw new Error('User not found');
-      }
-      models.User.update(
-        { fullname, age, email },
-        { where: { id } },
-      )
-        .then(() => {
-          res.send({
-            error: false,
-            payload: {
-              user: data || [],
-            },
-          });
-        })
-        .catch((err) => res.json({
-          error: true,
-          message: err.message,
-        }));
-    })
-    .catch((err) => res.json({
+    return res.send({
+      error: false,
+      payload: {
+        user: {
+          id, fullname, age, email,
+        },
+      },
+    });
+  } catch (err) {
+    return res.json({
       error: true,
       message: err.message,
-    }));
-  return res.send('ok');
+    });
+  }
 });
 
 router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
-  await models.User.findOne({ where: { id } })
-    .then((data) => {
-      if (!data) {
-        throw new Error('User not found');
-      }
+  try {
+    const { id } = req.params;
 
-      models.User.destroy({ where: { id } })
-        .then(() => {
-          res.send({
-            error: false,
-            payload: {
-              users: data || [],
-            },
-            success: true,
-          });
-        })
-        .catch((err) => res.json({
-          error: true,
-          message: err.message,
-        }));
-    })
-    .catch((err) => res.json({
+    const user = await models.User.findOne({ where: { id } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    models.User.destroy({ where: { id } });
+
+    const { fullname, age, email } = user;
+    res.send({
+      error: false,
+      payload: {
+        users: {
+          id, fullname, age, email,
+        },
+      },
+      success: true,
+    });
+  } catch (err) {
+    res.json({
       error: true,
       message: err.message,
-    }));
+    });
+  }
 });
 
 module.exports = router;

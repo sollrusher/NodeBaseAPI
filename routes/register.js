@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const models = require('../models');
-const signJwt = require('../utils/jwtsign');
+const signJwt = require('../utils/signJwt');
 const cryptPass = require('../utils/cryptPass');
 
 router.post('/', async (req, res) => {
@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
     const { password } = req.body;
     const { age } = req.body;
 
-    const cryptoPassword = cryptPass(password);
+    const cryptoPassword = await cryptPass(password);
 
     const user = await models.User.create({
       fullname,

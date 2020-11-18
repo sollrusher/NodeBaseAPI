@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const decrypt = require('../utils/decryptPass');
-const signJwt = require('../utils/jwtsign');
+const signJwt = require('../utils/signJwt');
 
 const models = require('../models');
 
@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
     if (!user) {
       throw new Error('User not found');
     }
-    if (!decrypt(password, user.password)) {
+    if (!await decrypt(password, user.password)) {
       throw new Error('Password wrong');
     }
 
@@ -26,7 +26,9 @@ router.post('/', async (req, res) => {
     return res.json({
       error: false,
       payload: {
-        user: { id, fullname, age },
+        user: {
+          id, fullname, age, email,
+        },
         token,
       },
     });

@@ -10,7 +10,7 @@ function verifyToken(req, res, next) {
   }
   const bearerToken = bearerHeader.split(' ')[1];
   req.token = bearerToken;
-  jwt.verify(bearerToken, 'secretjwt', (err, decodec) => {
+  return jwt.verify(bearerToken, 'secretjwt', (err, decodec) => {
     if (err) {
       return res.status(400).send({
         error: true,
@@ -18,10 +18,8 @@ function verifyToken(req, res, next) {
       });
     }
     req.userId = decodec.userId;
-    next();
-    return res.send('ok');
+    return next();
   });
-  return res.send('ok');
 }
 
 module.exports = verifyToken;
