@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const multer = require('multer');
 
 const users = require('./routes/users');
 const register = require('./routes/register');
@@ -20,6 +21,16 @@ const sequelize = new Sequelize(config.dbName, config.user, config.password, {
 app.use(cors());
 app.use(urlencodedParser);
 app.use(jsonParser);
+
+const upload = multer({ dest: 'public/uploads/' }).single('file');
+
+app.post('/upload', (req, res) => {
+  upload(req, res, () => {
+    const { file } = req;
+    const { prevUrl } = req.body;
+    console.log(req, prevUrl, file);
+  });
+});
 
 app.use('/users', users);
 app.use('/register', register);

@@ -31,13 +31,13 @@ router.get('/:id', async (req, res) => {
   await models.User.findOne({ where: { id: req.params.id } }, { raw: true })
     .then((data) => {
       const {
-        id, fullname, age, email, password,
+        id, fullname, age, email, about,
       } = data;
       res.send({
         error: false,
         payload: {
           users: {
-            id, fullname, age, email, password,
+            id, fullname, age, email, about,
           } || [],
         },
       });
@@ -50,19 +50,23 @@ router.get('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const { fullname, age, email } = req.body;
+    const {
+      fullname, age, email, about,
+    } = req.body;
     const { id } = req.params;
 
-    if (!fullname || !age || !email || !id) {
-      throw new Error('Empty field');
-    }
+    // if (!fullname || !age || !email || !id) {
+    //   throw new Error('Empty field');
+    // }
 
     const user = await models.User.findOne({ where: { id } });
     if (!user) {
       throw new Error('User not found');
     }
     models.User.update(
-      { fullname, age, email },
+      {
+        fullname, age, email, about,
+      },
       { where: { id } },
     );
 
@@ -70,7 +74,7 @@ router.put('/:id', async (req, res) => {
       error: false,
       payload: {
         user: {
-          id, fullname, age, email,
+          id, fullname, age, email, about,
         },
       },
     });
