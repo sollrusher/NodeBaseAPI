@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
+const statica = require('node-static');
 
 const users = require('./routes/users');
 const register = require('./routes/register');
@@ -22,15 +23,16 @@ app.use(cors());
 app.use(urlencodedParser);
 app.use(jsonParser);
 
-const upload = multer({ dest: 'public/uploads/' }).single('file');
+const upload = multer({ dest: 'uploads/' }).single('file');
 
 app.post('/upload', (req, res) => {
   upload(req, res, () => {
-    const { file } = req;
-    const { prevUrl } = req.body;
-    console.log(req, prevUrl, file);
+    const rata = req.file;
+    res.send(rata.path);
   });
 });
+
+app.use(express.static('public'));
 
 app.use('/users', users);
 app.use('/register', register);
@@ -39,7 +41,7 @@ app.use('/auth', auth);
 sequelize
   .sync()
   .then(() => {
-    app.listen(3000, () => {
+    app.listen(5000, () => {
       // eslint-disable-next-line no-console
       console.log('Сервер ожидает подключения...');
     });

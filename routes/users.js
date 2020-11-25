@@ -27,8 +27,8 @@ router.get('/', async (req, res) => {
     }));
 });
 
-router.get('/:id', async (req, res) => {
-  await models.User.findOne({ where: { id: req.params.id } }, { raw: true })
+router.get('/profile', async (req, res) => {
+  await models.User.findOne({ where: { id: req.userId } }, { raw: true })
     .then((data) => {
       const {
         id, fullname, age, email, about,

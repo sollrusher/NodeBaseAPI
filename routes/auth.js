@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
       },
     });
   } catch (err) {
-    return res.json({
+    return res.status(404).json({
       error: true,
       message: err.message,
     });
