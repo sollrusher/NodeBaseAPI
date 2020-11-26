@@ -31,12 +31,12 @@ router.post('/', async (req, res) => {
       age,
     });
     const token = await signJwt(user.id);
-    const { id } = user;
+    const { id, about } = user;
     return res.json({
       error: false,
       payload: {
         user: {
-          id, fullname, email, age,
+          id, fullname, email, age, about,
         },
         token,
       },
